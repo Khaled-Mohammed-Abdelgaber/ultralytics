@@ -55,8 +55,9 @@ class YOLODataset(BaseDataset):
         (torch.utils.data.Dataset): A PyTorch dataset object that can be used for training an object detection model.
     """
 
-    def __init__(self, *args, data=None, task="detect", **kwargs):
+    def __init__(self, *args, data=None, task="detect",ext_transform, **kwargs):
         """Initializes the YOLODataset with optional configurations for segments and keypoints."""
+        self.ext_transform = ext_transform
         self.use_segments = task == "segment"
         self.use_keypoints = task == "pose"
         self.use_obb = task == "obb"
@@ -193,6 +194,7 @@ class YOLODataset(BaseDataset):
                 bgr=hyp.bgr if self.augment else 0.0,  # only affect training.
             )
         )
+        transforms.append(self.ext_transform)
         return transforms
 
     def close_mosaic(self, hyp):
