@@ -100,6 +100,7 @@ class BaseTrainer:
             overrides (dict, optional): Configuration overrides. Defaults to None.
         """
         self.args = get_cfg(cfg, overrides)
+        self.resume_epochs = self.args.epochs
         self.check_resume(overrides)
         self.device = select_device(self.args.device, self.args.batch)
         self.validator = None
@@ -662,11 +663,17 @@ class BaseTrainer:
 
                 # Check that resume data YAML exists, otherwise strip to force re-download of dataset
                 ckpt_args = attempt_load_weights(last).args
+                #####################修改处↓#####################
+                ckpt_args["save_dir"] = "runs\\detect\\train"# <--- 修改处
+                #####################修改处↑####################
                 if not Path(ckpt_args["data"]).exists():
                     ckpt_args["data"] = self.args.data
 
                 resume = True
                 self.args = get_cfg(ckpt_args)
+                ############修改处#####################
+                self.args.epochs = self.resume_epochs #重新覆盖self.args.epochs数值 
+                #######################################
                 self.args.model = self.args.resume = str(last)  # reinstate model
                 for k in "imgsz", "batch", "device":  # allow arg updates to reduce memory or update device on resume
                     if k in overrides:
@@ -684,6 +691,10 @@ class BaseTrainer:
         if ckpt is None or not self.resume:
             return
         best_fitness = 0.0
+        ###############################
+        if ckpt["epoch"] == -1:  #修改处
+        	ckpt["epoch"] = 299 # 修改处
+        ################################
         start_epoch = ckpt.get("epoch", -1) + 1
         if ckpt.get("optimizer", None) is not None:
             self.optimizer.load_state_dict(ckpt["optimizer"])  # optimizer
