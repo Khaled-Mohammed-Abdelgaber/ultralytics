@@ -664,7 +664,7 @@ class BaseTrainer:
                 # Check that resume data YAML exists, otherwise strip to force re-download of dataset
                 ckpt_args = attempt_load_weights(last).args
                 #####################修改处↓#####################
-                ckpt_args["save_dir"] = "runs\\detect\\train"# <--- 修改处
+                ckpt_args["save_dir"] = "runs\\detect\\train5"# <--- 修改处
                 #####################修改处↑####################
                 if not Path(ckpt_args["data"]).exists():
                     ckpt_args["data"] = self.args.data
