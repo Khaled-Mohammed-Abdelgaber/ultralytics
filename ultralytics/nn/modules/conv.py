@@ -68,19 +68,18 @@ class Conv(nn.Module):
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True, simam = True):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__()
-        
-        if simam:
-            self.conv =  nn.Sequential(
-                    nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False),
-                    simam_module())
-        else:
-            self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.is_simam = simam
+        self.simam = simam_module()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False) 
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        return self.act(self.bn(self.conv(x)))
+        if self.is_simam:
+            return self.act(self.bn(self.simam(self.conv(x))))
+        else:
+            return self.act(self.bn(self.conv(x)))
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
